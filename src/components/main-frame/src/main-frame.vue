@@ -51,9 +51,11 @@
     const initApp = (): Application => {
         const app = new PIXI.Application({
             width: windowWidth.value,
-            height: windowHeight.value,
-            // backgroundColor: 0xf4567b
-        }) //PIXI实例
+            height: windowHeight.value
+        })
+        const min = (windowWidth.value < windowHeight.value) ? windowWidth.value : windowHeight.value
+        const scale = min / 750  // 根据设计稿尺寸进行缩放比例调整
+        app.stage.scale.set(scale, scale)  // 根据屏幕实际宽高放大舞台
         if (windowWidth.value < windowHeight.value) {
             app.stage.rotation = Math.PI / 2
             app.stage.pivot.set(0.5)
@@ -62,6 +64,7 @@
         return app
     }
     const app = initApp()
+    defineExpose({initApp})
 
     //初始化Loader
     const initLoader = (): Loader => {
@@ -87,8 +90,8 @@
     const initScenes = (): void => {
         scenesOptions.map(option => {
             scenes[option.name] = new PIXI.Container()
-            scenes[option.name].width = option.width
-            scenes[option.name].height = option.height
+            // scenes[option.name].width = option.width
+            // scenes[option.name].height = option.height
             scenes[option.name].x = option.x
             app.stage.addChild(scenes[option.name])
         })
@@ -114,7 +117,7 @@
 
     //初始化AlloyTouch
     const initTouch = (): void => {
-        const scrollDistance = app.stage.width - Math.max(windowWidth.value, windowHeight.value) * 2
+        const scrollDistance = -app.stage.width + (windowWidth.value > windowHeight.value ? windowWidth.value : windowHeight.value)
 
         alloyTouch.value = new AlloyTouch({
             touch: 'body',
@@ -122,7 +125,7 @@
             target: canvasContainer.value,
             sensitivity: 1,
             factor: 0.5,
-            min: -scrollDistance,
+            min: scrollDistance,
             max: 0,
             step: 45,
             value: 0,
@@ -134,7 +137,7 @@
         const handleScroll = (value: number): number => {
             if (value < 0) value = 0
             store.$state.scrollPosition = value
-            let progress = value / scrollDistance
+            let progress = -value / scrollDistance
             progress = progress < 0 ? 0 : progress > 1 ? 1 : progress
             timeline.value?.seek(progress)
             console.info('[滚动距离]', value, '，[时间线进度]', progress)

@@ -5,23 +5,24 @@ export type Animations = {
 }
 
 export const animations: Animations = {
-    cloud: [
-        {delay: 0, duration: 0.05, from: {x: 0, ease: Power0.easeNone}},
-        {
-            prop: 'scale',
-            delay: 0,
-            duration: 0.05,
-            to: {x: 1.2, y: 1.2, ease: Power0.easeNone}
-        },
-        {
-            delay: 0.04,
-            duration: 0.1,
-            to: {alpha: 0, ease: Power0.easeNone}
-        },
-        {
-            delay: 0.06,
-            duration: 0.1,
-            to: {rotation: -1, ease: Power0.easeNone}
-        }
-    ],
+    'scene1-1': [{
+        delay: 0.3,
+        duration: 0.1,
+        to: {y: 30, ease: Power0.easeNone, yoyo: true, repeat: -1}
+    }],
+    'scene1-2': [{
+        delay: 0.42,
+        duration: 0.1,
+        from: {alpha: 0, ease: Power0.easeNone}
+    }],
+    'scene1-3': [{
+        delay: 0.85,
+        duration: 0.15,
+        from: {y: -600, ease: Power0.easeNone}
+    }],
+    'scene1-4': [{
+        delay: 0.95,
+        duration: 0.1,
+        from: {alpha: 0, ease: Power0.easeNone}
+    }]
 }

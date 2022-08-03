@@ -8,7 +8,5 @@ export const scenesOptions = [
     {
         name: 'scene1',
         x: 0,
-        width: 13952,
-        height: 750
     },
 ]

@@ -1,6 +1,6 @@
 <template>
   <div class="w-screen h-screen overflow-hidden">
-    <MainFrame v-if="isMobile"/>
+    <MainFrame v-if="isMobile" ref="mainFrame"/>
     <PcFrame v-else/>
   </div>
 </template>
@@ -15,6 +15,8 @@
     const store = useStore()
     const {isMobile, screenOrientation} = storeToRefs(store)
 
+    const mainFrame = ref<any>(null)
+
     //获取设备类型
     const getDeviceType = (): string => {
         const flag = (/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i).test(navigator.userAgent.toLowerCase())
@@ -27,6 +29,7 @@
         const {isSupported, angle} = useScreenOrientation()
         isSupported && (store.screenOrientation = [-90, 90].includes(angle.value) ? 'landscape' : 'portrait') || (store.screenOrientation = 'unsupported')
         console.log('[screenOrientation]', store.screenOrientation)
+        !!mainFrame.value && mainFrame.value.initApp()
     }
     getScreenOrientation()
     window.addEventListener('orientationchange', getScreenOrientation)

@@ -10,12 +10,10 @@ export type Sprites = {
 
 export const spritesOptions: SpriteOption[] = [
     {
-        bg: {
-            position: {x: 0, y: 0}
-        },
-        cloud: {
-            position: {x: -300, y: 0},
-            anchor: {x: 0.2, y: 0.2},
-        }
-    }
+        'scene1-0': {position: {x: 0, y: 0},},
+        'scene1-1': {position: {x: 0, y: 0}},
+        'scene1-2': {position: {x: 0, y: 0}},
+        'scene1-3': {position: {x: 0, y: 0}},
+        'scene1-4': {position: {x: 0, y: 0}}
+    },
 ]
