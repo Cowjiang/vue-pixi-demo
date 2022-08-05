@@ -1,7 +1,7 @@
 <template>
   <div ref="canvasContainer" class="w-screen h-screen"></div>
   <transition name="fade">
-    <div v-if="loadProgress !== 100" class="fixed top-0 w-screen h-screen bg-white flex justify-center items-center">
+    <div v-if="!loadComplete" class="fixed top-0 w-screen h-screen bg-white flex justify-center items-center">
     <span class="text-2xl font-weight-bold">
       加载进度：{{ loadProgress }}%
     </span>
@@ -26,23 +26,31 @@
     const {windowWidth, windowHeight, screenOrientation, scrollPosition, timeline} = storeToRefs(store)
     const canvasContainer = ref<HTMLElement | null>(null)
     const isLoadError = ref(false) //是否加载错误
+    const loadComplete = ref(false) //是否加载完成
     const alloyTouch = ref<AlloyTouch>(null)
     const loadProgress = ref(0) //加载进度
+    const bgHeight = 761 //设计稿的高度
+
+    const minWidth = windowWidth.value < windowHeight.value ? windowWidth.value : windowHeight.value //屏幕最短边长度
+    const maxWidth = windowWidth.value > windowHeight.value ? windowWidth.value : windowHeight.value //屏幕最长边长度
+    const scale = minWidth / bgHeight  // 舞台缩放比例
 
     const scenes: Scenes = {}
     const sprites: Sprites = {}
 
     //初始化
     const init = () => {
+        loadComplete.value = false
         store.timeline = initTimeline()
         loader.onComplete.add(() => {
             if (!isLoadError.value) {
                 (canvasContainer.value as HTMLElement).appendChild(app.view)
-                console.log('[PIXI] 加载完成')
+                console.log('[PIXI] 加载资源完成')
                 initScenes()
                 initSprites()
                 initAnimation()
                 initTouch()
+                loadComplete.value = true
             }
         })
     }
@@ -52,9 +60,8 @@
         const app = new PIXI.Application({
             width: windowWidth.value,
             height: windowHeight.value
-        })
-        const min = (windowWidth.value < windowHeight.value) ? windowWidth.value : windowHeight.value
-        const scale = min / 750  // 根据设计稿尺寸进行缩放比例调整
+            // backgroundColor: 0xf4567b
+        }) //PIXI实例
         app.stage.scale.set(scale, scale)  // 根据屏幕实际宽高放大舞台
         if (windowWidth.value < windowHeight.value) {
             app.stage.rotation = Math.PI / 2
@@ -117,7 +124,7 @@
 
     //初始化AlloyTouch
     const initTouch = (): void => {
-        const scrollDistance = -app.stage.width + (windowWidth.value > windowHeight.value ? windowWidth.value : windowHeight.value)
+        const scrollDistance = -app.stage.width + maxWidth
 
         alloyTouch.value = new AlloyTouch({
             touch: 'body',
@@ -127,7 +134,6 @@
             factor: 0.5,
             min: scrollDistance,
             max: 0,
-            step: 45,
             value: 0,
             maxSpeed: 1,
             initialValue: 0, // 初始值
@@ -140,7 +146,11 @@
             let progress = -value / scrollDistance
             progress = progress < 0 ? 0 : progress > 1 ? 1 : progress
             timeline.value?.seek(progress)
-            console.info('[滚动距离]', value, '，[时间线进度]', progress)
+            console.log(
+                '[滚动距离]', Number(value.toFixed(2)), '，',
+                '[时间线进度]', Number((progress * 100).toFixed(2)), '%，',
+                '[原始位置]', Number((app.stage.width / scale * (-value / scrollDistance)).toFixed(2))
+            )
             return value
         }
     }
@@ -150,10 +160,16 @@
 
     //初始化动画
     const initAnimation = (): void => {
+        const stageRawWidth = app.stage.width / scale
         Object.keys(animations).forEach(k => {
             animations[k].forEach(v => {
-                const {duration, delay, from, to} = v
+                let {startAt, endAt, duration, delay, from, to} = v
                 const sprite = v.prop ? (sprites[k] as any)[v.prop] : sprites[k]
+                if (!!startAt && !!endAt) {
+                    delay = startAt / stageRawWidth
+                    duration = (endAt - startAt) / stageRawWidth
+                }
+                if (typeof duration !== 'number') return
                 let act = null
                 if (from && to) {
                     act = TweenMax.fromTo(sprite, duration, from, to)
