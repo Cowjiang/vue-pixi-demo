@@ -1,6 +1,6 @@
 {
-  "name": "beauty-of-bay-area",
-  "private": true,
+  "name": "vue-pixi-demo",
+  "private": false,
   "version": "0.0.1",
   "scripts": {
     "dev": "vite",
