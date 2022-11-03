@@ -4,5 +4,5 @@ import App from './App.vue'
 import 'virtual:windi.css'
 
 createApp(App)
-    .use(createPinia())
-    .mount('#app')
+  .use(createPinia())
+  .mount('#app')
